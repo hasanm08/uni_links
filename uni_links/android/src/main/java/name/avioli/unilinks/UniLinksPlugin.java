@@ -24,19 +24,17 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
     private String initialLink;
     private String latestLink;
     private Context context;
-    private boolean initialIntent = true;
 
     private void handleIntent(Context context, Intent intent) {
         String action = intent.getAction();
         String dataString = intent.getDataString();
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            if (initialIntent) {
+            if (initialLink == null) {
                 initialLink = dataString;
-                initialIntent = false;
             }
             latestLink = dataString;
-            if (changeReceiver != null) changeReceiver.onReceive(context, intent);
+            if (changeReceiver != null) changeReceiver.onReceive(context, intent, changeReceiver);
         }
     }
 
@@ -61,21 +59,21 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
     }
 
     @Override
-    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    public void onAttachedToEngine(@NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         this.context = flutterPluginBinding.getApplicationContext();
-        register(flutterPluginBinding.getBinaryMessenger(), this);
+        register(flutterPluginBinding.getBinaryMessenger());
     }
 
-    private static void register(BinaryMessenger messenger, UniLinksPlugin plugin) {
+    private void register(BinaryMessenger messenger) {
         final MethodChannel methodChannel = new MethodChannel(messenger, MESSAGES_CHANNEL);
-        methodChannel.setMethodCallHandler(plugin);
+        methodChannel.setMethodCallHandler(this);
 
         final EventChannel eventChannel = new EventChannel(messenger, EVENTS_CHANNEL);
-        eventChannel.setStreamHandler(plugin);
+        eventChannel.setStreamHandler(this);
     }
 
     /** Plugin registration. */
-    public static void registerWith(@NonNull PluginRegistry.Registrar registrar) {
+    public static void registerWith(PluginRegistry.Registrar registrar) {
         // Detect if we've been launched in background
         if (registrar.activity() == null) {
             return;
@@ -83,14 +81,14 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
 
         final UniLinksPlugin instance = new UniLinksPlugin();
         instance.context = registrar.context();
-        register(registrar.messenger(), instance);
+        instance.register(registrar.messenger());
 
         instance.handleIntent(registrar.context(), registrar.activity().getIntent());
         registrar.addNewIntentListener(instance);
     }
 
     @Override
-    public void onDetachedFromEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {}
+    public void onDetachedFromEngine(@NonNull FlutterPlugin.FlutterPluginBinding binding) {}
 
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
@@ -115,23 +113,23 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
 
     @Override
     public boolean onNewIntent(Intent intent) {
-        this.handleIntent(context, intent);
+        handleIntent(context, intent);
         return false;
     }
 
     @Override
-    public void onAttachedToActivity(@NonNull ActivityPluginBinding activityPluginBinding) {
-        activityPluginBinding.addOnNewIntentListener(this);
-        this.handleIntent(this.context, activityPluginBinding.getActivity().getIntent());
+    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        binding.addOnNewIntentListener(this);
+        handleIntent(context, binding.getActivity().getIntent());
     }
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {}
 
     @Override
-    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding activityPluginBinding) {
-        activityPluginBinding.addOnNewIntentListener(this);
-        this.handleIntent(this.context, activityPluginBinding.getActivity().getIntent());
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        binding.addOnNewIntentListener(this);
+        handleIntent(context, binding.getActivity().getIntent());
     }
 
     @Override
