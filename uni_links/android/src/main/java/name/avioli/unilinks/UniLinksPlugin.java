@@ -7,7 +7,6 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
@@ -73,7 +72,7 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
 
     /** Plugin registration. */
     public static void registerWith(PluginRegistry.Registrar registrar) {
-        // Detect if we've been launched in background
+        // Detect if we've been launched in the background
         if (registrar.activity() == null) {
             return;
         }
@@ -114,21 +113,4 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
         handleIntent(context, intent);
         return false;
     }
-
-    @Override
-    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        binding.addOnNewIntentListener(this);
-        handleIntent(context, binding.getActivity().getIntent());
-    }
-    @Override
-    public void onDetachedFromActivityForConfigChanges() {}
-
-    @Override
-    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        binding.addOnNewIntentListener(this);
-        handleIntent(context, binding.getActivity().getIntent());
-    }
-
-    @Override
-    public void onDetachedFromActivity() {}
 }
