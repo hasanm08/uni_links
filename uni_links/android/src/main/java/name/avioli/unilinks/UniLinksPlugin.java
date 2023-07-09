@@ -7,7 +7,6 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
@@ -15,7 +14,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
-public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler, ActivityAware, PluginRegistry.NewIntentListener {
+public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler, PluginRegistry.NewIntentListener {
     private static final String MESSAGES_CHANNEL = "uni_links/messages";
     private static final String EVENTS_CHANNEL = "uni_links/events";
 
@@ -117,18 +116,18 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
     }
 
     @Override
-    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        binding.addOnNewIntentListener(this);
-        handleIntent(context, binding.getActivity().getIntent());
+    public void onAttachedToActivity(@NonNull PluginRegistry.Registrar registrar) {
+        registrar.addNewIntentListener(this);
+        handleIntent(context, registrar.activity().getIntent());
     }
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {}
 
     @Override
-    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        binding.addOnNewIntentListener(this);
-        handleIntent(context, binding.getActivity().getIntent());
+    public void onReattachedToActivityForConfigChanges(@NonNull PluginRegistry.Registrar registrar) {
+        registrar.addNewIntentListener(this);
+        handleIntent(context, registrar.activity().getIntent());
     }
 
     @Override
