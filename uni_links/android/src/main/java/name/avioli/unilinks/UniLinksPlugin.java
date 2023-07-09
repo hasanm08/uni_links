@@ -34,7 +34,7 @@ public class UniLinksPlugin implements FlutterPlugin, MethodChannel.MethodCallHa
                 initialLink = dataString;
             }
             latestLink = dataString;
-            if (changeReceiver != null) changeReceiver.onReceive(context, intent, changeReceiver);
+            if (changeReceiver != null) changeReceiver.onReceive(context, intent);
         }
     }
 
